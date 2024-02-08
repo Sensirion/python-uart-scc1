@@ -1,0 +1,90 @@
+name: Build and Publish Package to pypi.org
+on:
+  push:
+    tags:
+        - "^[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+    build:
+      runs-on: ubuntu-22.04
+      steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: ${{ matrix.python-version }}
+            - name: Install Poetry
+              uses: abatilo/actions-poetry@v2
+              with:
+                poetry-version: 1.7.1
+            - uses: actions/cache@v4
+              name: Define a cache for the virtual environment based on the dependencies lock file
+              with:
+                path: ./.venv
+                key: venv-${{ hashFiles('poetry.lock') }}
+            - name: Install the project dependencies
+              run: poetry install
+            - name: Build Packages
+              run: poetry install
+            - name: Build Python packages
+              run: poetry build
+            - name: Store the distribution packages
+              uses: actions/upload-artifact@v3
+              with:
+                name: python-package-distributions
+                path: dist/
+    publish-pypi:
+        environment:
+            name: release
+            url: https://pypi.org/p/sensirion-uart-scc1
+        permissions:
+            id-token: write
+        runs-on: ubuntu-22.04
+        needs:
+          - build
+        steps:
+            - name: Download artifacts
+              uses: actions/download-artifact@v3
+              with:
+                name: python-package-distributions
+                path: dist/
+            - name: Publish package distributions to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+    github-release:
+      name: Sign Pyhon distribution and upload it as GitHub Release
+      needs:
+        - build
+        - publish-pypi
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+        id-token: write
+      steps:
+        - name: Download artifacts
+          uses: actions/download-artifact@v3
+          with:
+            name: python-package-distributions
+            path: dist/
+        - name: Sign the dists with Sigstore
+          uses: sigstore/gh-action-sigstore-python@v1.2.3
+          with:
+            inputs: >-
+              ./dist/*.tar.gz
+              ./dist/*.whl
+        - name: Create GitHub Release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: >-
+            gh release create
+            '${{ github.ref_name }}'
+            --repo '${{ github.repository }}'
+            --notes ""
+        - name: Upload artifact signatures to GitHub Release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Upload to GitHub Release using the `gh` CLI.
+          # `dist/` contains the built packages, and the
+          # sigstore-produced signatures and certificates.
+          run: >-
+            gh release upload
+            '${{ github.ref_name }}' dist/**
+            --repo '${{ github.repository }}'

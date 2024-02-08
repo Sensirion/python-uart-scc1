@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "sensirion-uart-scc1"
+version = "0.1.0"
+description = "Driver for Sensirion SCC1 USB cable"
+authors = ["Pascal Sachs"]
+license = "BSD-3-Clause"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4"
+sensirion-shdlc-driver = "^0.1.5"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]	
+pytest = "^7.4"
+flake8 = "^7.0.0"
+pytest-cov = "^4.1"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov=sensirion_uart_scc1 --cov-report term --cov-report lcov --junitxml=test-report.xml"
+testpaths = [
+	"tests"
+]
+
+[tool.poetry.group.docs] 
+optional = true 
+
+[tool.poetry.group.docs.dependencies] 
+sphinx = "^6.1.3"
+sphinx-rtd-theme = "^1.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

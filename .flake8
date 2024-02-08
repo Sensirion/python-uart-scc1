@@ -1,0 +1,14 @@
+[flake8]
+exclude = 
+    .git,
+    .venv,
+    .tox,
+    __pycache__,
+    docs,
+    build,
+    dist,
+    .eggs,
+    .pytest_cache
+    tests/conftest.py
+max-line-length = 120
+statistics = true
