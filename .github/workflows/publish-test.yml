@@ -1,0 +1,50 @@
+name: Build and Publish to test PyPi
+on: push
+
+jobs:
+    build:
+      runs-on: ubuntu-22.04
+      steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                python-version: ${{ matrix.python-version }}
+            - name: Install Poetry
+              uses: abatilo/actions-poetry@v2
+              with:
+                poetry-version: 1.7.1
+            - uses: actions/cache@v4
+              name: Define a cache for the virtual environment based on the dependencies lock file
+              with:
+                path: ./.venv
+                key: venv-${{ hashFiles('poetry.lock') }}
+            - name: Install the project dependencies
+              run: poetry install
+            - name: Build Packages
+              run: poetry install
+            - name: Build Python packages
+              run: poetry build
+            - name: Store the distribution packages
+              uses: actions/upload-artifact@v3
+              with:
+                name: python-package-distributions
+                path: dist/
+    publish-pypi:
+        environment:
+            name: test-release
+            url: https://test.pypi.org/p/sensirion-uart-scc1
+        permissions:
+            id-token: write
+        runs-on: ubuntu-22.04
+        needs:
+          - build
+        steps:
+            - name: Download artifacts
+              uses: actions/download-artifact@v3
+              with:
+                name: python-package-distributions
+                path: dist/
+            - name: Publish package distributions to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                repository-url: https://test.pypi.org/legacy/
