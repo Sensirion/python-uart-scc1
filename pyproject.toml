@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sensirion-uart-scc1"
-version = "0.1.0"
+version = "1.0.0"
 description = "Driver for Sensirion SCC1 USB cable"
 authors = ["Pascal Sachs"]
 license = "BSD-3-Clause"
