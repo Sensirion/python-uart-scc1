@@ -10,19 +10,28 @@ class RxTx(Protocol):
 
     @property
     def tx_data(self) -> Optional[bytes]:
-        """The byte array with the data to be sent"""
+        """
+        The byte array with the data to be sent
+        """
 
     @property
     def rx_length(self) -> Optional[int]:
-        """ Number of bytes to read
+        """
+        Number of bytes to read
         """
 
     @property
     def read_delay(self) -> float:
-        """Time between writing and reading an i2c command."""
+        """
+        Time between writing and reading an i2c command.
+        """
 
     def interpret_response(self, data: Optional[bytes]) -> Optional[Tuple[Any, ...]]:
-        """Split the byte array from the response into the fields of the command."""
+        """Split the byte array from the response into the fields of the command.
+
+        :param data: The byte array that needs to be interpreted.
+        :return: A tuple with the interpreted data.
+        """
 
 
 @runtime_checkable
@@ -30,7 +39,8 @@ class I2cTransceiver(Protocol):
 
     def execute(self, slave_addr: int, rx_tx: RxTx) -> Tuple[Any, ...]:
         """
-        Compatibility method for driver adapters
+        Compatibility method for driver adapters.
+
         :param slave_addr: i2c slave address
         :param rx_tx: Object containing the information to execute the communication with the device
         :return: interpreted results

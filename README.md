@@ -12,7 +12,7 @@ For both scenarios an example is available in the example subfolder of this repo
 
 **Note**: Using the cable as USB to I2c bridge will not allow to achieve the same throughput as with the embedded API.
 
-The API of the driver is described on the [documentation page](https://potential-bassoon-5myg4n3.pages.github.io/) of this repository
+The API of the driver is described on the [documentation page](https://sensirion.github.io/python-uart-scc1) of this repository
 
 ## Getting started
 

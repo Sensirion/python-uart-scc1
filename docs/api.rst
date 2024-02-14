@@ -4,10 +4,14 @@ API Documentation
 Protocols:
 ----------
 
-.. automodule:: sensirion_uart_scc1.protocols
+.. automodule:: sensirion_uart_scc1.protocols.i2c_transceiver
    :members:
    :undoc-members:
-   :exclude-members: __init__
+
+.. automodule:: sensirion_uart_scc1.protocols.shdlc_transceiver
+   :members:
+   :undoc-members:
+
 
 Exceptions:
 -----------
@@ -24,8 +28,7 @@ Scc1ShdlcDevice:
 
 Drivers:
 --------
-.. automodule:: sensirion_uart_scc1.drivers
+.. automodule:: sensirion_uart_scc1.drivers.scc1_slf3x
    :members:
    :undoc-members:
-   :exclude-members: __init__
 

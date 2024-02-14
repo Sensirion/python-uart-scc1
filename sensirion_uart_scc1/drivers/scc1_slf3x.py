@@ -17,10 +17,16 @@ class Scc1Slf3x:
     The Scc1 provides features to support the Slf3x liquid flow sensors. This driver accesses the sensor through the
     API specified by scc1.
     """
-    SENSOR_TYPE = 3  #: Slf3x
+    SENSOR_TYPE = 3  #: Sensor type for Slf3x
     START_MEASUREMENT_DELAY_S = 0.015
 
     def __init__(self, device: Scc1ShdlcDevice, liquid_mode: SlfMode = SlfMode.LIQUI_1) -> None:
+        """
+        Initialize object instance.
+
+        :param device: The Scc1 device that provides the access to the sensor.
+        :param liquid_mode: The liquid that is measured.
+        """
         self._scc1 = device
         self._liquid_config = SLF_PRODUCT_LIQUI_MAP[SlfProduct.SLF3x]
         self._serial_number, self._product_id = self._get_serial_number_and_product_id()
@@ -32,6 +38,8 @@ class Scc1Slf3x:
     @property
     def serial_number(self) -> int:
         """
+        Get the serial number
+
         :return: The serial number as integer
         """
         return self._serial_number
@@ -39,6 +47,8 @@ class Scc1Slf3x:
     @property
     def product_id(self) -> int:
         """
+        Get the product Id
+
         :return: The product identifier as integer
         """
         return self._product_id
@@ -53,7 +63,8 @@ class Scc1Slf3x:
     @liquid_mode.setter
     def liquid_mode(self, mode: SlfMode) -> None:
         """
-        Set liquid measurement mode
+        Set liquid measurement mode.
+
         :param mode: One of the liquid measurement modes
         """
         if not isinstance(mode, SlfMode):
@@ -68,12 +79,16 @@ class Scc1Slf3x:
     @property
     def liquid_mode_name(self) -> str:
         """
+        Get the name of the liquid.
+
         :return: Name of current liquid measurement mode
         """
         return self.get_liquid_mode_name(self._liquid_mode)
 
     def get_liquid_mode_name(self, mode: SlfMode) -> str:
         """
+        Get the name of the liquid
+
         :param mode: A liquid mode
         :return: Get name of a specific liquid measurement mode
         """
@@ -83,6 +98,7 @@ class Scc1Slf3x:
     def sampling_interval_ms(self) -> int:
         """
         Sampling interval for synchronous measurement
+
         :return: Current internal sampling interval
         """
         return self._sampling_interval_ms
@@ -92,12 +108,15 @@ class Scc1Slf3x:
         """
         Set sampling interval for continuous measurement
         This will not be applied while measurement is running
+
         :param interval_ms: The requested measurement interval in milliseconds
         """
         self._sampling_interval_ms = interval_ms
 
     def get_serial_number(self) -> int:
         """
+        Get the serial number of the device.
+
         :return: The sensor serial number
         """
         return self._serial_number
@@ -106,6 +125,7 @@ class Scc1Slf3x:
         """
         Get the scale factor, unit and sensor sanity check result of the sensor for the given argument.
         (only available on some SLF3x sensor products)
+
         :param command: The 16-bit command to read flow unit and scale factor for. If no value is supplied
             the actual measurement command is used
         :return: A tuple with (scale_factor, flow_unit), None if command is not supported
@@ -123,6 +143,8 @@ class Scc1Slf3x:
         """
         Read current measurement and starts internal continuous measurement with configured interval, if not
         already started.
+
+        :return: A tuple with flow, temperature and flag
         """
         data = self._scc1.transceive(0x35, [self.SENSOR_TYPE], 0.01)
         if not data:
@@ -133,6 +155,7 @@ class Scc1Slf3x:
     def start_continuous_measurement(self, interval_ms=0) -> None:
         """
         Start a continuous measurement with a give interval.
+
         :param interval_ms: Measurement interval in milliseconds.
         """
         if self._is_measuring:
@@ -154,7 +177,8 @@ class Scc1Slf3x:
     def read_extended_buffer(self) -> Tuple[int, int, List[Tuple[Any, ...]]]:
         """
         Read out measurement buffer
-        :return: A tuple with (bytes_remaining, bytes_los, data)
+
+        :return: A tuple with (bytes_remaining, bytes_lost, data)
         """
         data = self._scc1.transceive(0x36, [self.SENSOR_TYPE], 0.01)
         bytes_lost = int(struct.unpack('>I', data[:4])[0])

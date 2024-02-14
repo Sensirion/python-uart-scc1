@@ -18,7 +18,12 @@ class Scc1ShdlcDevice(ShdlcDevice):
     The Scc1 Shdlc device is used to communicate with various sensor using the Sensirion SCC1 sensor cable.
     """
 
-    def __init__(self, connection: ShdlcConnection, slave_address: int) -> None:
+    def __init__(self, connection: ShdlcConnection, slave_address: int = 0) -> None:
+        """Initialize object instance.
+
+        :param connection: The used ShdlcConnection
+        :param slave_address: The SHDLC slave address that is used by this device.
+        """
         super().__init__(connection, slave_address)
         self._version = self.get_version()
         self._serial_number = self.get_serial_number()
@@ -48,10 +53,11 @@ class Scc1ShdlcDevice(ShdlcDevice):
     def transceive(self, command: int, data: Union[bytes, Iterable], timeout: float = -1.0) -> Optional[bytes]:
         """
         Provides a generic way to send shdlc commands.
-        :param command: The command to send (one byte)
-        :param data: byte array of the data to send as arguments to the command
-        :param timeout: response timeout in seconds (-1 for using default value)
-        :return: The returned data as bytes
+
+        :param command: The command to send (one byte).
+        :param data: Byte array of the data to send as arguments to the command.
+        :param timeout: Response timeout in seconds (-1 for using default value).
+        :return: The returned data as bytes.
         """
         if timeout <= 0.0:
             timeout = 3.0
