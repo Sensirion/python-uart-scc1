@@ -8,7 +8,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4"
+packaging = "^23-2"
 sensirion-shdlc-driver = "^0.1.5"
+sensirion-i2c-driver="^1.0.0"
 
 [tool.poetry.group.test]
 optional = true
@@ -21,6 +23,7 @@ pytest-cov = "^4.1"
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--cov=sensirion_uart_scc1 --cov-report term --cov-report lcov --junitxml=test-report.xml"
+markers = "needs_hardware"
 testpaths = [
 	"tests"
 ]
