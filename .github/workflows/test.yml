@@ -28,7 +28,7 @@ jobs:
               name: Define a cache for the virtual environment based on the dependencies lock file
               with:
                 path: ./.venv
-                key: venv-${{ hashFiles('poetry.lock') }}
+                key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
             - name: Install the project dependencies
               run: poetry install --with test
             - name: Verify style with flake8
