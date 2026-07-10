@@ -11,7 +11,7 @@ parser.add_argument('--serial-port', '-p', default='COM5')
 args = parser.parse_args()
 
 with ShdlcSerialPort(port=args.serial_port, baudrate=115200) as port:
-    device = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
+    device = Scc1ShdlcDevice(ShdlcConnection(port), target_address=0)
     device.set_sensor_type(Scc1Slf3x.SENSOR_TYPE)
     sensor = Scc1Slf3x(device)
     print("serial_number:", sensor.serial_number)

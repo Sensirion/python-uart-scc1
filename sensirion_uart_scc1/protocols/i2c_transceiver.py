@@ -37,24 +37,24 @@ class RxTx(Protocol):
 @runtime_checkable
 class I2cTransceiver(Protocol):
 
-    def execute(self, slave_addr: int, rx_tx: RxTx) -> Tuple[Any, ...]:
+    def execute(self, target_address: int, rx_tx: RxTx) -> Optional[Tuple[Any, ...]]:
         """
         Compatibility method for driver adapters.
 
-        :param slave_addr: i2c slave address
+        :param target_address: I2c address or the sensor
         :param rx_tx: Object containing the information to execute the communication with the device
         :return: interpreted results
         """
 
-    def transceive(self, slave_address: int, tx_data: Optional[bytes], rx_length: Optional[int], read_delay: float,
+    def transceive(self, target_address: int, tx_data: Optional[bytes], rx_length: Optional[int], read_delay: float,
                    timeout: float) -> bytes:
         """
         Send data to the sensor and receive back a response. This function can be used for sending or receiving only
         as well.
 
-        :param slave_address: I2c address of the sensor.
+        :param target_address: I2c address of the sensor.
         :param tx_data: The data to be sent. In case no data shall be sent, this parameter is supposed to be None
-        :param rx_length: Length of the repsonse of the sensor. If the request does not have a response, this parameter
+        :param rx_length: Length of the response of the sensor. If the request does not have a response, this parameter
             may be 0.
         :param read_delay: Defines the time in seconds that needs to be observed after sending the data before
             the read is initiated.

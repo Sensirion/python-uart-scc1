@@ -19,13 +19,14 @@ class Scc1ShdlcDevice(ShdlcDevice):
     The Scc1 SHDLC device is used to communicate with various sensors using the Sensirion SCC1 sensor cable.
     """
 
-    def __init__(self, connection: ShdlcConnection, slave_address: int = 0) -> None:
-        """Initialize object instance.
+    def __init__(self, connection: ShdlcConnection, target_address: int = 0) -> None:
+        """Initialize SCC1 SHDLC Device.
 
         :param connection: The used ShdlcConnection
-        :param slave_address: The SHDLC slave address that is used by this device.
+        :param target_address: The SHDLC target address used by this device (default: 0).
+                               Usually 0 unless multiple devices are connected to the same USB port.
         """
-        super().__init__(connection, slave_address)
+        super().__init__(connection, target_address)
         self._version = self.get_version()
         self._serial_number = self.get_serial_number()
         self._sensor_type = self.get_sensor_type()
@@ -58,6 +59,8 @@ class Scc1ShdlcDevice(ShdlcDevice):
         :return: List of i2c addresses that responded to the scan
         """
         result = self.transceive(0x29, [0x01], timeout=0.025)
+        if not result:
+            return []
         return list(unpack('>{cnt}B'.format(cnt=len(result)), result))
 
     def find_chips(self) -> List[int]:
@@ -112,20 +115,57 @@ class Scc1ShdlcDevice(ShdlcDevice):
         self.transceive(0x25, [i2c_address], timeout=0.01)
         self._i2c_address = i2c_address
 
+    def get_totalizator_status(self) -> Optional[bool]:
+        """
+        Get the Status (enabled / disabled) of the Totalizator.
+        :return: True if the totalizator is enabled, False if disabled
+        """
+        result = self.transceive(0x37, [], timeout=0.01)
+        if result is None:
+            return None
+        return bool(result[0])
+
+    def set_totalizator_status(self, enabled: bool) -> None:
+        """
+        Enable or disable the Totalizator. The value of the Totalizator is not changed with this command.
+        :param enabled: True to enable the totalizator, false to disable it
+        """
+        self.transceive(0x37, [1 if enabled else 0], timeout=0.01)
+
+    def get_totalizator_value(self) -> Optional[int]:
+        """
+        Get the value of the Totalizator. This value is the sum of all unscaled
+        measurements while in continuous measurement.
+        Note for sensor type 3 only: Only the flow values (signal 1) are totalized, and
+        the values are interpreted as i16 signed integers.
+        :return: Totalizator value
+        """
+        result = self.transceive(0x38, [], timeout=0.01)
+        if result is None:
+            return None
+        return int(unpack('>q', result)[0])
+
+    def reset_totalizator(self) -> None:
+        """
+        Set the Totalizator value to zero, the Totalizator Status (enabled/disabled) is
+        not changed. The Totalizator can be reset anytime.
+        """
+        self.transceive(0x39, [], timeout=0.01)
+
     def sensor_reset(self) -> None:
         """
         Execute a hard reset on the sensor and check for the correct response.
-        Active continuous/single measurement is stopped, and the sensor is left in idle state.
+        Active continuous/single measurement is stopped, and the sensor is left in the idle state.
         """
         self.transceive(0x66, [], 0.3)
 
     def transceive(self, command: int, data: Union[bytes, Iterable], timeout: float = -1.0) -> Optional[bytes]:
         """
-        Provides a generic way to send shdlc commands.
+        Provides a generic way to send SHDLC commands.
 
         :param command: The command to send (one byte).
         :param data: Byte array of the data to send as arguments to the command.
-        :param timeout: Response timeout in seconds (-1 for using default value).
+        :param timeout: Response timeout in seconds (-1 for using the default value).
         :return: The returned data as bytes.
         """
         if timeout <= 0.0:

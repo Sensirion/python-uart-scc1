@@ -195,6 +195,37 @@ class Scc1Slf3x:
                for i in range(num_samples)]
         return bytes_remaining, bytes_lost, out
 
+    def get_totalizator_status(self) -> bool:
+        """
+        Get the Status (enabled / disabled) of the Totalizator.
+        :return: True if the totalizator is enabled, False if disabled
+        """
+        return self._scc1.get_totalizator_status()
+
+    def set_totalizator_status(self, enabled: bool) -> None:
+        """
+        Enable or disable the Totalizator. The value of the Totalizator is not changed with this command.
+        :param enabled: true to enable the totalizator, false to disable it
+        """
+        self._scc1.set_totalizator_status(enabled)
+
+    def get_totalizator_value(self) -> int:
+        """
+        Get the value of the Totalizator. This value is the sum of all unscaled
+        measurements while in continuous measurement.
+        Note for sensor type 3 only: Only the flow values (signal 1) are totalized, and
+        the values are interpreted as i16 signed integers.
+        :return: totalizator value
+        """
+        return self._scc1.get_totalizator_value()
+
+    def reset_totalizator(self) -> None:
+        """
+        Set the Totalizator value to zero, the Totalizator Status (enabled/disabled) is
+        not changed. The Totalizator can be reset anytime.
+        """
+        self._scc1.reset_totalizator()
+
     def _get_serial_number_and_product_id(self) -> Tuple[int, int]:
         """
         :return: The sensor serial number and product id as tuple
