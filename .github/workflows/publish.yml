@@ -6,17 +6,17 @@ on:
 
 jobs:
     build:
-      runs-on: ubuntu-22.04
+      runs-on: ubuntu-24.04
       steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-python@v5
+            - uses: actions/checkout@v7.0.0
+            - uses: actions/setup-python@v6.3.0
               with:
-                python-version: ${{ matrix.python-version }}
+                python-version: '3.11'
             - name: Install Poetry
-              uses: abatilo/actions-poetry@v2
+              uses: abatilo/actions-poetry@v4.0.0
               with:
                 poetry-version: 1.7.1
-            - uses: actions/cache@v4
+            - uses: actions/cache@v6.1.0
               name: Define a cache for the virtual environment based on the dependencies lock file
               with:
                 path: ./.venv
@@ -28,7 +28,7 @@ jobs:
             - name: Build Python packages
               run: poetry build
             - name: Store the distribution packages
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v7.0.1
               with:
                 name: python-package-distributions
                 path: dist/
@@ -38,19 +38,19 @@ jobs:
             url: https://pypi.org/p/sensirion-uart-scc1
         permissions:
             id-token: write
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         needs:
           - build
         steps:
             - name: Download artifacts
-              uses: actions/download-artifact@v3
+              uses: actions/download-artifact@v8.0.1
               with:
                 name: python-package-distributions
                 path: dist/
             - name: Publish package distributions to PyPI
-              uses: pypa/gh-action-pypi-publish@release/v1
+              uses: pypa/gh-action-pypi-publish@v1.14.0
     github-release:
-      name: Sign Pyhon distribution and upload it as GitHub Release
+      name: Sign Python distribution and upload it as GitHub Release
       needs:
         - build
         - publish-pypi
@@ -60,12 +60,12 @@ jobs:
         id-token: write
       steps:
         - name: Download artifacts
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@v8.0.1
           with:
             name: python-package-distributions
             path: dist/
         - name: Sign the dists with Sigstore
-          uses: sigstore/gh-action-sigstore-python@v1.2.3
+          uses: sigstore/gh-action-sigstore-python@v3.4.0
           with:
             inputs: >-
               ./dist/*.tar.gz

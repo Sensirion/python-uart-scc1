@@ -7,19 +7,16 @@
 import os
 import sys
 from datetime import datetime
-
-import pkg_resources
+from importlib import metadata
 
 # Add project directory such that sphinx can detect the package.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # -- Project information -----------------------------------------------------
-distribution = pkg_resources.get_distribution('sensirion_uart_scc1')
-
-project = distribution.project_name
+project = 'sensirion-uart-scc1'
+version = metadata.version('sensirion_uart_scc1')
 copyright = u'{} Sensirion AG, Switzerland'.format(datetime.now().year)
 author = 'Sensirion AG'
-version = distribution.version
 
 
 # -- General configuration ---------------------------------------------------

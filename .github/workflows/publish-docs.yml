@@ -8,17 +8,17 @@ on:
 
 jobs:
     build_pages:
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-python@v5
+            - uses: actions/checkout@v7.0.0
+            - uses: actions/setup-python@v6.3.0
               with:
                 python-version: 3.11
             - name: Install Poetry
-              uses: abatilo/actions-poetry@v2
+              uses: abatilo/actions-poetry@v4.0.0
               with:
-                poetry-version: 1.7.1
-            - uses: actions/cache@v4
+                poetry-version: 2.2.1
+            - uses: actions/cache@v6.1.0
               name: Define a cache for the virtual environment based on the dependencies lock file
               with:
                 path: ./.venv
@@ -28,11 +28,11 @@ jobs:
             - name: Build documentation
               run: cd docs && poetry run make html
             - name: Upload html
-              uses: actions/upload-pages-artifact@v1
+              uses: actions/upload-pages-artifact@v5.0.0
               with:
                 path: ./docs/_build/html
     deploy_pages:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         needs: build_pages
         permissions:
           pages: write      # to deploy to Pages
@@ -44,6 +44,6 @@ jobs:
         steps:
           - name: Deploy to GitHub Pages
             id: deployment
-            uses: actions/deploy-pages@v2 
+            uses: actions/deploy-pages@v5.0.0
             with:
               token: ${{secrets.GITHUB_TOKEN}}
