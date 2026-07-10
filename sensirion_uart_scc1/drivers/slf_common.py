@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This file contains channels, gas modes and product specifications used by multiple SLF products
+This file contains channels, gas modes, and product specifications used by multiple SLF products
 """
 from __future__ import annotations
 

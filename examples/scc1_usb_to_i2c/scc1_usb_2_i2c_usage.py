@@ -11,7 +11,7 @@ from sensirion_shdlc_driver import ShdlcSerialPort, ShdlcConnection
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 
 with ShdlcSerialPort(port='COM5', baudrate=115200) as port:
-    bridge = Scc1ShdlcDevice(ShdlcConnection(port), slave_address=0)
+    bridge = Scc1ShdlcDevice(ShdlcConnection(port), target_address=0)
     bridge.set_sensor_type(3)  # SF06 devices
 
     channel = I2cChannel(bridge.get_i2c_transceiver(),
