@@ -17,7 +17,7 @@ def test_slf3x_serial_number_and_product_id(slf3x):
 
 
 @pytest.mark.needs_hardware
-def test_scc1_sf06_start_measurements(slf3x):
+def test_slf3x_start_measurements(slf3x):
     assert slf3x is not None
     slf3x.start_continuous_measurement(100)
     for i in range(3):
