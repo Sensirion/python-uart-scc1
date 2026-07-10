@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import struct
 from struct import unpack
 from typing import Optional, Iterable, Union, List
 
@@ -71,6 +72,61 @@ class Scc1ShdlcDevice(ShdlcDevice):
         self._connected_i2c_addresses = self.perform_i2c_scan()
         return self._connected_i2c_addresses
 
+    def get_user_data(self, block_number: int = 0) -> bytes:
+        """
+        Get 20 bytes of User Data from EEPROM.
+        :param block_number: The block number to read (0..4).
+        :return: 20 bytes of user data.
+        """
+        if block_number not in range(5):
+            raise ValueError("Block number must be between 0 and 4.")
+        result = self.transceive(0x21, [block_number], timeout=0.01)
+        if len(result) != 21:
+            raise ValueError(f"Unexpected response length for User Data: {len(result)} bytes (expected 21)")
+        received_block = result[0]
+        if received_block != block_number:
+            raise ValueError(f"Received block number {received_block} does not match requested block {block_number}")
+        return result[1:]
+
+    def set_user_data(self, block_number: int, data: bytes) -> None:
+        """
+        Save 20 bytes of User Data in EEPROM.
+        :param block_number: The block number to write (0..4).
+        :param data: 20 bytes of user data.
+        """
+        if block_number not in range(5):
+            raise ValueError("Block number must be between 0 and 4.")
+        if len(data) != 20:
+            raise ValueError("User data must be 20 bytes long.")
+        payload = bytearray([block_number])
+        payload.extend(data)
+        self.transceive(0x21, payload, timeout=0.01)
+
+    def device_selftest(self) -> int:
+        """
+        Execute a device selftest.
+        :return: Selftest result (0: success, other: error code).
+        """
+        result = self.transceive(0x22, [], timeout=0.5)
+        return int(unpack('>H', result)[0])
+
+    def get_sensor_voltage(self) -> int:
+        """
+        Get the configured sensor supply voltage.
+        :return: Sensor voltage (0: 3.3V, 1: 5.0V).
+        """
+        result = self.transceive(0x23, [], timeout=0.01)
+        return int(result[0])
+
+    def set_sensor_voltage(self, voltage: int) -> None:
+        """
+        Set the sensor supply voltage.
+        :param voltage: Sensor voltage (0: 3.3V, 1: 5.0V).
+        """
+        if voltage not in [0, 1]:
+            raise ValueError("Voltage must be 0 (3.3V) or 1 (5.0V).")
+        self.transceive(0x23, [voltage], timeout=0.01)
+
     def get_sensor_type(self) -> Optional[int]:
         """
         :return: the configured sensor type
@@ -115,6 +171,61 @@ class Scc1ShdlcDevice(ShdlcDevice):
         self.transceive(0x25, [i2c_address], timeout=0.01)
         self._i2c_address = i2c_address
 
+    def measure_sensor_voltage(self) -> int:
+        """
+        Measure the sensor supply voltage.
+        :return: Output voltage in mV.
+        """
+        result = self.transceive(0x26, [], timeout=0.01)
+        return int(unpack('>H', result)[0])
+
+    def get_i2c_delay(self) -> int:
+        """
+        Get the I2C delay.
+        :return: The I2C delay in microseconds
+        """
+        result = self.transceive(0x28, [], timeout=0.01)
+        return int(unpack('>H', result)[0])
+
+    def set_i2c_delay(self, delay_us: int) -> None:
+        """
+        Set the I2C delay.
+        :param delay_us: The I2C delay in microseconds
+        """
+        self.transceive(0x28, list(struct.pack('>H', delay_us)), timeout=0.01)
+
+    def get_sensor_serial_number(self, sensor_type: int) -> str:
+        """
+        Get the serial number of the connected sensor.
+        :param sensor_type: The sensors type
+        :return: the sensor serial number as string
+        """
+        result = self.transceive(0x54, [sensor_type], timeout=0.01)
+        return result.rstrip(b'\x00').decode('utf-8')
+
+    def get_sensor_part_name(self, sensor_type: int) -> str:
+        """
+        Get the part name of the connected sensor.
+        :param sensor_type: The sensors' type
+        :return: the sensors' part name as string
+        """
+        result = self.transceive(0x50, [sensor_type], timeout=0.01)
+        return result.rstrip(b'\x00').decode('utf-8')
+
+    def i2c_transceive(self, i2c_address: int, tx_data: bytes, rx_length: int, timeout_ms: int) -> bytes:
+        """
+        Perform an I2C transceive operation.
+        :param i2c_address: The I2C address
+        :param tx_data: data to transmit
+        :param rx_length:  the number of bytes to receive
+        :param timeout_ms: timeout in milliseconds
+        :return: received data
+        """
+        data = bytearray([i2c_address, rx_length])
+        data.extend(struct.pack('>H', timeout_ms))
+        data.extend(tx_data)
+        return self.transceive(0x2a, data, timeout=timeout_ms / 1000.0 + 0.05)
+
     def get_totalizator_status(self) -> Optional[bool]:
         """
         Get the Status (enabled / disabled) of the Totalizator.
@@ -152,14 +263,36 @@ class Scc1ShdlcDevice(ShdlcDevice):
         """
         self.transceive(0x39, [], timeout=0.01)
 
+    def get_sensor_status(self) -> Optional[int]:
+        """
+        Get the status of sensor and continuous measurement.
+
+        :return: Sensor status as integer, None if not available.
+        """
+        result = self.transceive(0x30, [], timeout=0.01)
+        if not result:
+            return None
+        return int(result[0])
+
+    def get_continuous_measurement_status(self) -> Optional[int]:
+        """
+        Get the interval or status of the Continuous Measurement.
+
+        :return: Measurement interval in ms if started, None if not started.
+        """
+        result = self.transceive(0x33, [], timeout=0.01)
+        if not result:
+            return None
+        return int(unpack('>H', result)[0])
+
     def sensor_reset(self) -> None:
         """
-        Execute a hard reset on the sensor and check for the correct response.
+        Execute a hard reset on the sensor. Sensor must be idle for execution of this command.
         Active continuous/single measurement is stopped, and the sensor is left in the idle state.
         """
-        self.transceive(0x66, [], 0.3)
+        self.transceive(0x65, [], 0.3)
 
-    def transceive(self, command: int, data: Union[bytes, Iterable], timeout: float = -1.0) -> Optional[bytes]:
+    def transceive(self, command: int, data: Union[bytes, Iterable], timeout: float = -1.0) -> bytes:
         """
         Provides a generic way to send SHDLC commands.
 

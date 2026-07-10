@@ -57,12 +57,26 @@ LD20_PRODUCT_NAME = {
 
 SLF3x_PRODUCT_IDS = list(SLF3x_PRODUCT_NAME.keys())
 
+#: Product id to product name mapping for SF06 family
+SF06_PRODUCT_NAME = {
+    0x070105: 'SLQ-QT105',
+    0x070101: 'SLQ-QT500',
+    0x070201: 'SLI-0430',
+    0x070202: 'SLI-1000',
+    0x070203: 'SLI-2000',
+    0x070204: 'SLI-0430_P',
+    0x070205: 'SLG-0430',
+}
+
+SF06_PRODUCT_IDS = list(SF06_PRODUCT_NAME.keys())
+
 LD20_2600B_PRODUCT_IDS = list(LD20_PRODUCT_NAME.keys())
 
 
 class SlfProduct(Enum):
     SLF3x = 'SLF3x'
-    LD20 = 'LD20-2600B',
+    LD20 = 'LD20-2600B'
+    SF06 = 'SF06'
 
     @staticmethod
     def from_product_id(product_id: int) -> SlfProduct:
@@ -70,6 +84,8 @@ class SlfProduct(Enum):
             return SlfProduct.SLF3x
         elif product_id in LD20_2600B_PRODUCT_IDS:
             return SlfProduct.LD20
+        elif product_id in SF06_PRODUCT_IDS:
+            return SlfProduct.SF06
         raise Scc1InvalidProductId(product_id)
 
 
@@ -80,6 +96,8 @@ class SlfProductName:
             return SLF3x_PRODUCT_NAME.get(product_id, 'SLF3x')
         elif product is SlfProduct.LD20:
             return LD20_PRODUCT_NAME.get(product_id, 'LD20')
+        elif product is SlfProduct.SF06:
+            return SF06_PRODUCT_NAME.get(product_id, 'SF06')
         raise Scc1InvalidProductId(product_id)
 
 
@@ -107,6 +125,10 @@ SLF_PRODUCT_LIQUI_MAP = {
     })),
     SlfProduct.LD20: SlfLiquiConfig(OrderedDict({
         SlfMode.LIQUI_1: 'Water',
+    })),
+    SlfProduct.SF06: SlfLiquiConfig(OrderedDict({
+        SlfMode.LIQUI_1: 'Water',
+        SlfMode.LIQUI_2: 'Isopropyl alcohol',
     }))
 }
 

@@ -9,6 +9,8 @@ from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 @pytest.fixture
 def scc1_device():
     for port_info in comports():
+        if port_info.vid != 0x0403:
+            continue
         try:
             shdlc_port = ShdlcSerialPort(port=port_info.device, baudrate=115200)
             with shdlc_port:

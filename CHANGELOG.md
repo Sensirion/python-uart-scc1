@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add SHDLC commands: User Data (0x21), Device Selftest (0x22), Sensor Voltage (0x23), Measure Sensor Voltage (0x26)
 - Add interface for totalizer
 - Ensure linux file endings across the package
 - Fix several typos
