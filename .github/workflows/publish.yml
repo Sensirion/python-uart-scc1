@@ -80,7 +80,9 @@ jobs:
               echo "No distribution artifacts found in ./dist/"
               exit 1
             fi
+            echo "Found ${#files[@]} distribution artifacts to sign."
             for file in "${files[@]}"; do
+              echo "Signing ${file}"
               python3 -m sigstore sign "${file}"
             done
         - name: Create GitHub Release
