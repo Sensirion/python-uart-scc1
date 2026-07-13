@@ -56,20 +56,26 @@ jobs:
         - publish-pypi
       runs-on: ubuntu-latest
       permissions:
+        actions: read
         contents: write
         id-token: write
       steps:
         - name: Download artifacts
-          uses: actions/download-artifact@v8.0.1
-          with:
-            name: python-package-distributions
-            path: dist/
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: >-
+            gh run download
+            '${{ github.run_id }}'
+            --name python-package-distributions
+            --dir dist/
+            --repo '${{ github.repository }}'
+        - name: Install sigstore-python
+          run: python3 -m pip install --upgrade sigstore
         - name: Sign the dists with Sigstore
-          uses: sigstore/gh-action-sigstore-python@v3.4.0
-          with:
-            inputs: >-
-              ./dist/*.tar.gz
-              ./dist/*.whl
+          run: >-
+            python3 -m sigstore sign
+            ./dist/*.tar.gz
+            ./dist/*.whl
         - name: Create GitHub Release
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
