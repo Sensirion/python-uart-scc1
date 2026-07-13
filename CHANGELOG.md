@@ -5,13 +5,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-7-13
+
+### Added
 - Add SHDLC commands: User Data (0x21), Device Selftest (0x22), Sensor Voltage (0x23), Measure Sensor Voltage (0x26)
 - Add interface for totalizer
+
+### Changed
+- Improve usage examples
 - Ensure linux file endings across the package
-- Fix several typos
 - Update GitHub actions to the latest versions
 - Update dependencies
-- Improve usage examples
+
+### Fixed
+- Fix several typos
 
 ## [1.1.1] - 2024-4-10
 
@@ -33,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Provide initial version of this repository containing a driver for the Sensirion SCC1-USB cable.
 
-[Unreleased]: https://github.com/Sensirion/python-uart-scc1/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/Sensirion/python-uart-scc1/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/Sensirion/python-uart-scc1/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/Sensirion/python-uart-scc1/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/Sensirion/python-uart-scc1/releases/tag/1.0.0
