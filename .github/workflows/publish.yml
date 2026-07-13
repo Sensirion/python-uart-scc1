@@ -72,10 +72,17 @@ jobs:
         - name: Install sigstore-python
           run: python3 -m pip install --upgrade sigstore
         - name: Sign the dists with Sigstore
-          run: >-
-            python3 -m sigstore sign
-            ./dist/*.tar.gz
-            ./dist/*.whl
+          shell: bash
+          run: |
+            shopt -s nullglob
+            files=(./dist/*.tar.gz ./dist/*.whl)
+            if [ "${#files[@]}" -eq 0 ]; then
+              echo "No distribution artifacts found in ./dist/"
+              exit 1
+            fi
+            for file in "${files[@]}"; do
+              python3 -m sigstore sign "${file}"
+            done
         - name: Create GitHub Release
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
