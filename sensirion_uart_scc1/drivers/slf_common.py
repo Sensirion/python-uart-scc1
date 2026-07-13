@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from enum import Enum
+from typing import Optional
 
 from sensirion_uart_scc1.scc1_exceptions import Scc1InvalidProductId
 
@@ -23,7 +24,7 @@ class SlfMode(Enum):
     LIQUI_8 = 'Liquid 8'
 
 
-class SlfMeasurementCommand(object):
+class SlfMeasurementCommand:
     MEASUREMENT_COMMANDS = {
         SlfMode.LIQUI_0: 0x3603,
         SlfMode.LIQUI_1: 0x3608,
@@ -79,7 +80,9 @@ class SlfProduct(Enum):
     SF06 = 'SF06'
 
     @staticmethod
-    def from_product_id(product_id: int) -> SlfProduct:
+    def from_product_id(product_id: Optional[int]) -> SlfProduct:
+        # remove last byte of the product id for detection
+        product_id = product_id >> 8
         if product_id in SLF3x_PRODUCT_IDS:
             return SlfProduct.SLF3x
         elif product_id in LD20_2600B_PRODUCT_IDS:
@@ -91,7 +94,10 @@ class SlfProduct(Enum):
 
 class SlfProductName:
     @staticmethod
-    def from_product(product: SlfProduct, product_id: int) -> str:
+    def from_product_id(product_id: Optional[int]) -> str:
+        # remove last byte of the product id for detection
+        product = SlfProduct.from_product_id(product_id)
+        product_id = product_id >> 8
         if product is SlfProduct.SLF3x:
             return SLF3x_PRODUCT_NAME.get(product_id, 'SLF3x')
         elif product is SlfProduct.LD20:
@@ -169,3 +175,9 @@ def get_flow_unit_label(flow_unit_raw: int) -> str:
     time_base = FLOW_UNIT_TIME_BASE.get((flow_unit_raw >> 4) & 0xF, '')
     volume = FLOW_UNIT_VOLUME.get((flow_unit_raw >> 8) & 0xF, '')
     return f'{prefix}{volume}/{time_base}'
+
+
+def get_volume_unit_label(flow_unit_raw: int) -> str:
+    prefix = FLOW_UNIT_PREFIX.get(flow_unit_raw & 0xF, '')
+    volume = FLOW_UNIT_VOLUME.get((flow_unit_raw >> 8) & 0xF, '')
+    return f'{prefix}{volume}'

@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add interface for totalizer
 - Ensure linux file endings across the package
 - Fix several typos
-- Update GitHub actions to latest versions
+- Update GitHub actions to the latest versions
 - Update dependencies
+- Improve usage examples
 
 ## [1.1.1] - 2024-4-10
 
