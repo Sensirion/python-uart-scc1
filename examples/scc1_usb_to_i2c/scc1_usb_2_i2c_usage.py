@@ -8,10 +8,12 @@ from sensirion_i2c_sf06_lf.commands import InvFlowScaleFactors
 from sensirion_i2c_sf06_lf.device import Sf06LfDevice
 from sensirion_shdlc_driver import ShdlcSerialPort, ShdlcConnection
 
+from sensirion_uart_scc1.drivers.slf_common import SlfProductName
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 
 with ShdlcSerialPort(port='COM5', baudrate=115200) as port:
     bridge = Scc1ShdlcDevice(ShdlcConnection(port), target_address=0)
+    bridge.sensor_reset()
     bridge.set_sensor_type(3)  # SF06 devices
 
     channel = I2cChannel(bridge.get_i2c_transceiver(),
@@ -25,11 +27,15 @@ with ShdlcSerialPort(port='COM5', baudrate=115200) as port:
         time.sleep(0.1)
     except BaseException:
         ...
-    (product_identifier, serial_number
-     ) = sensor.read_product_identifier()
-    print(f"product_identifier: {product_identifier}; " f"serial_number: {serial_number}; ")
+
+    product_identifier, serial_number = sensor.read_product_identifier()
+
+    print(f'Product: {SlfProductName.from_product_id(sensor.product_id)}')
+    print(f"product id: 0x{sensor.product_id:08X}")
+    print(f"Serial number: {sensor.serial_number}")
+
     sensor.start_h2o_continuous_measurement()
-    for i in range(500):
+    for i in range(50):
         try:
             time.sleep(0.02)
             (a_flow, a_temperature, a_signaling_flags

@@ -1,9 +1,10 @@
 import argparse
+import time
 
 from sensirion_shdlc_driver import ShdlcSerialPort, ShdlcConnection
 
 from sensirion_uart_scc1.drivers.scc1_slf3x import Scc1Slf3x
-from sensirion_uart_scc1.drivers.slf_common import get_flow_unit_label, SlfProductName
+from sensirion_uart_scc1.drivers.slf_common import get_volume_unit_label, SlfProductName
 from sensirion_uart_scc1.scc1_shdlc_device import Scc1ShdlcDevice
 
 parser = argparse.ArgumentParser()
@@ -20,19 +21,25 @@ with ShdlcSerialPort(port=args.serial_port, baudrate=115200) as port:
     print(f"product id: 0x{sensor.product_id:08X}")
     print(f"Serial number: {sensor.serial_number}")
 
-    print("Flow;\tTemperature;\tAir In Line;\tHigh Flow")
     flow_scale, unit = sensor.get_flow_unit_and_scale()
-    unit_label = get_flow_unit_label(unit)
-    sensor.start_continuous_measurement(interval_ms=2)
-    try:
-        for _ in range(50):
-            remaining, lost, data = sensor.read_extended_buffer()
-            for flow, temperature, flag in data:
-                air_in_line = bool(flag & 0x01)
-                high_flow = bool((flag >> 1) & 0x01)
-                flow_scaled = flow / flow_scale
-                temperature_scaled = temperature / 200
+    if flow_scale is None or unit is None:
+        raise RuntimeError("Could not determine the sensor flow unit and scale")
+    volume_unit_label = get_volume_unit_label(unit)
 
-                print(f'{flow_scaled:.3f} {unit_label};\t{temperature_scaled:.3f} C;\t{air_in_line};\t{high_flow}')
+    sensor.set_totalizator_status(True)
+    sensor.reset_totalizator()
+    # Measure as fast as possible
+    sensor.start_continuous_measurement(interval_ms=0)
+    try:
+        for _ in range(10):
+            time.sleep(1)
+            totalizer_value = sensor.get_totalizator_value()
+            if totalizer_value is None:
+                print("Totalizer value not available")
+                continue
+
+            totalized_flow = totalizer_value / flow_scale
+            print(f"Totalizer volume: {totalized_flow} {volume_unit_label}")
+
     finally:
         sensor.stop_continuous_measurement()

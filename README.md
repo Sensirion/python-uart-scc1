@@ -41,6 +41,13 @@ We provide two examples to show two basic usage scenarios of the driver
     python ./examples/scc1_slf3x_example/slf3x_usage.py --serial-port <your-com-port>
   ```
 
+- **SLF3x Totalizer Usage**
+  This example enables the totalizer, resets it before starting a measurement, and prints the accumulated totalizer flow together with the sensor's configured unit.
+
+  ```bash
+    python ./examples/scc1_slf3x_example/slf3x_totalizer_usage.py --serial-port <your-com-port>
+  ```
+
 - **USB-I2c-Bridge**
   This example shows how a public python driver can be used with the SCC1-USB cable. The example uses the public driver `sensirion_i2c_sf06_lf`. Before you run the example you need to install this driver.
 
